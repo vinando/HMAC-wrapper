@@ -12,12 +12,14 @@ import (
 	"time"
 )
 
+// HMACWrapper is
 type HMACWrapper struct {
 	ClientID     string
 	ClientSecret string
 	BaseURL      string
 }
 
+// Init is
 func Init(clientID string, clientSecret string, baseURL string) *HMACWrapper {
 	wrapper := &HMACWrapper{}
 	wrapper.ClientID = clientID
@@ -28,34 +30,46 @@ func Init(clientID string, clientSecret string, baseURL string) *HMACWrapper {
 
 var client = &http.Client{}
 
-// param endpoint must start with a '/'
-func (wp *HMACWrapper) DoGet(endpoint string) (resp interface{}, err error) {
+// DoGet is
+//param endpoint must start with a '/'
+func (wp *HMACWrapper) DoGet(endpoint string, headers map[string]string, resp interface{}) error {
 	signature, t := wp.constructSignature("GET " + endpoint + " HTTP/1.1")
 	req, err := http.NewRequest("GET", wp.BaseURL+endpoint, nil)
 	if err != nil {
-		log.Fatalf("Error initiating request")
+		log.Println("[DoGet] Error initiating request")
+		return err
+	}
+	for key, val := range headers {
+		req.Header.Set(key, val)
 	}
 	req.Header.Set("Date", t)
 	req.Header.Set("Authorization", fmt.Sprintf("hmac username=\"%s\", algorithm=\"hmac-sha256\", headers=\"date request-line\", signature=\"%s\"", wp.ClientID, signature))
 	res, err := client.Do(req)
 	if err != nil {
-		log.Fatalf("Error sending request")
+		log.Println("[DoGet] Error sending request")
+		return err
 	}
 	defer res.Body.Close()
 
 	err = json.NewDecoder(res.Body).Decode(&resp)
 	if err != nil {
-		log.Fatalf("Error decode json body")
+		log.Println("[DoGet] Error decode json body")
+		return err
 	}
-	return resp, nil
+	return nil
 }
 
-func (wp *HMACWrapper) DoPost(endpoint string, body []byte) (resp interface{}, err error) {
+// DoPost is
+func (wp *HMACWrapper) DoPost(endpoint string, body []byte, headers map[string]string, resp interface{}) error {
 	signature, t := wp.constructSignature("POST " + endpoint + " HTTP/1.1")
 	digest, err := wp.constructDigest(body)
 	req, err := http.NewRequest("POST", wp.BaseURL+endpoint, bytes.NewBuffer(body))
 	if err != nil {
-		log.Fatalf("Error initiating request")
+		log.Println("[DoPost] Error initiating request")
+		return err
+	}
+	for key, val := range headers {
+		req.Header.Set(key, val)
 	}
 	req.Header.Set("Content-Type", "application/json")
 	req.Header.Set("Date", t)
@@ -64,15 +78,17 @@ func (wp *HMACWrapper) DoPost(endpoint string, body []byte) (resp interface{}, e
 
 	res, err := client.Do(req)
 	if err != nil {
-		log.Fatalf("Error sending request")
+		log.Println("[DoPost] Error sending request")
+		return err
 	}
 	defer res.Body.Close()
 
 	err = json.NewDecoder(res.Body).Decode(&resp)
 	if err != nil {
-		log.Fatalf("Error decode json body")
+		log.Println("[DoPost] Error decode json body")
+		return err
 	}
-	return resp, nil
+	return nil
 }
 
 func (wp *HMACWrapper) constructSignature(reqLine string) (signature string, t string) {
