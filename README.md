@@ -22,6 +22,8 @@ The Init function need 3 parameters to pass into: client_id string, client_secre
 
 There are 2 method available:
 
-  a. DoGet(endpoint string) (resp interface{}, err error)
-  
-  b. DoPost(endpoint string, body []byte) (resp interface{}, err error)
+  a. DoGet(endpoint string, headers map[string]string, resp interface{} ) error 
+      
+  b. DoPost(endpoint string, body []byte, headers map[string]string, resp interface{}) error
+
+If there's no needed header to pass in, then just put a nil value for the second param. And the last parameter is of type interface{} which is the pointer to the struct where you want to save the response to. 
