@@ -29,7 +29,7 @@ func Init(clientID string, clientSecret string, baseURL string) *HMACWrapper {
 var client = &http.Client{}
 
 // param endpoint must start with a '/'
-func (wp *HMACWrapper) doGet(endpoint string) (resp interface{}, err error) {
+func (wp *HMACWrapper) DoGet(endpoint string) (resp interface{}, err error) {
 	signature, t := wp.constructSignature("GET " + endpoint + " HTTP/1.1")
 	req, err := http.NewRequest("GET", wp.BaseURL+endpoint, nil)
 	if err != nil {
@@ -50,7 +50,7 @@ func (wp *HMACWrapper) doGet(endpoint string) (resp interface{}, err error) {
 	return resp, nil
 }
 
-func (wp *HMACWrapper) doPost(endpoint string, body []byte) (resp interface{}, err error) {
+func (wp *HMACWrapper) DoPost(endpoint string, body []byte) (resp interface{}, err error) {
 	signature, t := wp.constructSignature("POST " + endpoint + " HTTP/1.1")
 	digest, err := wp.constructDigest(body)
 	req, err := http.NewRequest("POST", wp.BaseURL+endpoint, bytes.NewBuffer(body))
