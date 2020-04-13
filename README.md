@@ -8,10 +8,9 @@ The latest stable version is 1.0.0, released on April 13, 2020. Latest source co
 1. Import the package in your source code:
 ```
 import (
-
   Wrapper "github.com/vinando/HMAC-wrapper"
-
-)```
+)
+```
 
 2. Init the class
 
